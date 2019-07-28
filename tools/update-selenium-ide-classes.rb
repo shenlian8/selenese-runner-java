@@ -59,73 +59,40 @@ class Command
     $stderr.puts("* End reading #{mstr}")
   end
 
-  def read_top_level(list, line)
-    # no operation
-  end
-
-  def read_commands(list, line)
-    next_reader = nil
-    case line
-    when /^\]\s*$/
-      list.push(']')
-      end_reading("Commands")
-      next_reader = :read_top_level
-    else
-      list.push(line)
-    end
-    next_reader
-  end
-
-  def read_arg_types_js(parts)
-    list = parts[:read_arg_types] = Lines.new
-    File.foreach(ARG_TYPES_JS) do |line|
+  def read_export(file, name)
+    list = Lines.new
+    state = :top_level
+    File.foreach(file) do |line|
       case line
-      when /^export\s+const\s+ArgTypes\s+=\s+\{\s*$/
-        start_reading("ArgTypes")
+      when /^export\s+default\s*\{\s*$/
+        start_reading(name)
         list.push('{')
+        state = :export
       when /^\}\s*$/
         list.push('}')
-        end_reading("ArgTypes")
+        end_reading(name)
+        state = :top_level
       else
-        list.push(line)
+        list.push(line) if state == :export
       end
     end
+    list
   end
 
-  def read_commands_js
-    parts = {}
-    read_arg_types_js(parts)
-    reader = :read_top_level
-    File.foreach(COMMANDS_JS) do |line|
-      case line
-      when /^export\s+const\s+Commands\s+=\s+\[\s*$/
-        reader = :read_commands
-        parts[reader] = Lines.new('[')
-        start_reading("Commands")
-      else
-        if next_reader = method(reader).call(parts[reader], line)
-          reader = next_reader
-        end
-      end
+  def parse_list(list)
+    parsed = YAML.load(list.join)
+    map = {}
+    parsed.each do |key, info|
+      map[key] = info
     end
-    parts
-  end
-
-  def parse_string(list)
-    YAML.load(list.join)
+    map
   end
 
   def load
-    parts = read_commands_js
-    @arg_types = {}
-    parse_string(parts[:read_arg_types]).each do |key, info|
-      @arg_types[key] = info
-    end
-    @commands = {}
-    parse_string(parts[:read_commands]).each do |item|
-      key, info = *item
-      @commands[key] = info
-    end
+    arg_types_list = read_export(ARG_TYPES_JS, "ArgTypes")
+    @arg_types = parse_list(arg_types_list)
+    commands_list = read_export(COMMANDS_JS, "Commands")
+    @commands = parse_list(commands_list)
   end
 end
 

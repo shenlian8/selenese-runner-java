@@ -86,7 +86,7 @@ public enum ArgTypes {
 
     /** loop limit */
     LOOP_LIMIT("loopLimit", "loop limit",
-        "An optional argument that specifies the maximum number of times a looping control flow command can execute. This protects against infinite loops. The defaults value is set to 1000."),
+        "Maximum number of times a looping control flow command can execute to protect against infinite loops."),
 
     /** message */
     MESSAGE("message", "message",
@@ -138,7 +138,7 @@ public enum ArgTypes {
 
     /** variable name */
     VARIABLE_NAME("variableName", "variable name",
-        "The name of a variable without brackets."),
+        "The name of a variable (without brackets). Used to either store an expression's result in or reference for a check (e.g., with 'assert' or 'verify')."),
 
     /** wait time */
     WAIT_TIME("waitTime", "wait time",
