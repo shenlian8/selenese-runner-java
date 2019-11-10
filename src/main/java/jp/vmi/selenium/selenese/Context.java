@@ -323,7 +323,10 @@ public interface Context extends WrapsDriver, SubCommandMapProvider {
      * Get interactive.
      *
      * @return interactive.
+     *
+     * @deprecated use {@link InteractiveModeHandler#isEnabled()} with {@link #getInteractiveModeHandler()} instead.
      */
+    @Deprecated
     boolean isInteractive();
 
     /**
@@ -426,5 +429,14 @@ public interface Context extends WrapsDriver, SubCommandMapProvider {
      * @param maxTime the maxTime in milliseconds.
      */
     default void setupMaxTimeTimer(long maxTime) {
+    }
+
+    /**
+     * Get interactive mode handler.
+     *
+     * @return interactive mode handler.
+     */
+    default InteractiveModeHandler getInteractiveModeHandler() {
+        return InteractiveModeHandler.ALWAYS_NON_INTERACTIVE;
     }
 }
